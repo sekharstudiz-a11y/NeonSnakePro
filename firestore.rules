@@ -1,0 +1,82 @@
+// ===============================================================
+// Assumed Data Model
+// ===============================================================
+//
+// Collection: leaderboard
+// Document ID: auto-generated
+// Fields:
+//   - displayName: string (required, 1-50 chars) - The name of the player
+//   - score: number (required, positive) - The player's score
+//   - timestamp: timestamp (required) - When the score was achieved
+//   - uid: string (required, matches auth.uid) - The unique ID of the player
+//
+// Collection: test
+// Document ID: connection
+// Fields: any
+//
+// ===============================================================
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function hasRequiredFields(fields) {
+      return request.resource.data.keys().hasAll(fields);
+    }
+
+    function hasOnlyAllowedFields(fields) {
+      return request.resource.data.keys().hasOnly(fields);
+    }
+
+    function isValidScore(data) {
+      return hasRequiredFields(['displayName', 'score', 'timestamp', 'uid']) &&
+             hasOnlyAllowedFields(['displayName', 'score', 'timestamp', 'uid']) &&
+             data.displayName is string && data.displayName.size() > 0 && data.displayName.size() <= 50 &&
+             data.score is int && data.score >= 0 &&
+             data.timestamp is timestamp &&
+             data.uid == request.auth.uid;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() &&
+        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
+          (request.auth.token.email == "sekhar.studiz@gmail.com" && request.auth.token.email_verified == true));
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
+
+    match /leaderboard/{scoreId} {
+      // Anyone can read the leaderboard
+      allow read: if true;
+      
+      // Authenticated users can create their own scores
+      allow create: if isAuthenticated() && isValidScore(request.resource.data);
+      
+      // Scores are immutable once created
+      allow update, delete: if isAdmin();
+    }
+
+    match /test/connection {
+      allow read: if true;
+    }
+
+    // Default deny
+    match /{path=**} {
+      allow read, write: if isAdmin();
+    }
+  }
+}

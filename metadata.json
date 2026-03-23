@@ -1,0 +1,5 @@
+{
+  "name": "Neon Snake Pro",
+  "description": "A high-octane snake game with a global leaderboard and neon aesthetics.",
+  "requestFramePermissions": ["microphone"]
+}
