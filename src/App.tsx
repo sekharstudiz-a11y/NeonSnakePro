@@ -47,7 +47,7 @@ const GRID_SIZE = 20;
 const CANVAS_SIZE = 400;
 
 const DIFFICULTY_CONFIG = {
-  EASY: { initialSpeed: 250, speedIncrement: 1, obstacleInterval: 30000, threshold: 0, color: '#10b981', spawnCount: 1 }, // Emerald
+  EASY: { initialSpeed: 250, speedIncrement: 1, obstacleInterval: 15000, threshold: 0, color: '#10b981', spawnCount: 1 }, // Emerald
   MEDIUM: { initialSpeed: 180, speedIncrement: 3, obstacleInterval: 20000, threshold: 50, color: '#f59e0b', spawnCount: 2 }, // Amber
   HARD: { initialSpeed: 120, speedIncrement: 6, obstacleInterval: 12000, threshold: 150, color: '#3b82f6', spawnCount: 3 }, // Blue
   INSANE: { initialSpeed: 80, speedIncrement: 10, obstacleInterval: 6000, threshold: 300, color: '#f43f5e', spawnCount: 4 }, // Rose
