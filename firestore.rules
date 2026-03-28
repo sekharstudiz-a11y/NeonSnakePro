@@ -6,9 +6,11 @@
 // Document ID: auto-generated
 // Fields:
 //   - displayName: string (required, 1-50 chars) - The name of the player
-//   - score: number (required, positive) - The player's score
+//   - score: number (required, positive) - The player's raw score
+//   - weightedScore: number (required, positive) - The player's weighted score
+//   - difficulty: string (required, enum) - The difficulty level
 //   - timestamp: timestamp (required) - When the score was achieved
-//   - uid: string (required, matches auth.uid) - The unique ID of the player
+//   - uid: string (required, matches auth.uid or 'anonymous') - The unique ID of the player
 //
 // Collection: test
 // Document ID: connection
@@ -41,12 +43,17 @@ service cloud.firestore {
     }
 
     function isValidScore(data) {
-      return hasRequiredFields(['displayName', 'score', 'timestamp', 'uid']) &&
-             hasOnlyAllowedFields(['displayName', 'score', 'timestamp', 'uid']) &&
+      let isCorrectUid = (request.auth == null && data.uid == 'anonymous') || (request.auth != null && data.uid == request.auth.uid);
+      let validDifficulties = ['EASY', 'MEDIUM', 'HARD', 'INSANE'];
+
+      return hasRequiredFields(['displayName', 'score', 'weightedScore', 'difficulty', 'timestamp', 'uid']) &&
+             hasOnlyAllowedFields(['displayName', 'score', 'weightedScore', 'difficulty', 'timestamp', 'uid']) &&
              data.displayName is string && data.displayName.size() > 0 && data.displayName.size() <= 50 &&
              data.score is int && data.score >= 0 &&
+             data.weightedScore is int && data.weightedScore >= 0 &&
+             data.difficulty in validDifficulties &&
              data.timestamp is timestamp &&
-             data.uid == request.auth.uid;
+             isCorrectUid;
     }
 
     function isAdmin() {
@@ -63,8 +70,8 @@ service cloud.firestore {
       // Anyone can read the leaderboard
       allow read: if true;
       
-      // Authenticated users can create their own scores
-      allow create: if isAuthenticated() && isValidScore(request.resource.data);
+      // Allow score creation for both authenticated and anonymous users
+      allow create: if isValidScore(request.resource.data);
       
       // Scores are immutable once created
       allow update, delete: if isAdmin();

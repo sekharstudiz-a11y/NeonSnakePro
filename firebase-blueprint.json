@@ -11,7 +11,16 @@
         },
         "score": {
           "type": "integer",
-          "description": "The player's score."
+          "description": "The player's raw score."
+        },
+        "weightedScore": {
+          "type": "integer",
+          "description": "The player's score multiplied by difficulty."
+        },
+        "difficulty": {
+          "type": "string",
+          "enum": ["EASY", "MEDIUM", "HARD", "INSANE"],
+          "description": "The difficulty level."
         },
         "timestamp": {
           "type": "string",
@@ -23,7 +32,7 @@
           "description": "The unique ID of the player."
         }
       },
-      "required": ["displayName", "score", "timestamp", "uid"]
+      "required": ["displayName", "score", "weightedScore", "difficulty", "timestamp", "uid"]
     }
   },
   "firestore": {

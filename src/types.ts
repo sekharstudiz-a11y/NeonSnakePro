@@ -15,14 +15,18 @@ export interface GameState {
   score: number;
   isGameOver: boolean;
   isPaused: boolean;
+  isGameStarted: boolean;
   highScore: number;
   timeSinceLastFood: number;
+  initialDistance: number;
 }
 
 export interface LeaderboardEntry {
   id: string;
   displayName: string;
   score: number;
+  weightedScore: number;
+  difficulty: Difficulty;
   timestamp: any;
   uid: string;
 }
