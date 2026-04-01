@@ -1,5 +1,5 @@
 {
   "name": "Neo Pro Snake",
   "description": "A high-octane snake game with a global leaderboard and neon aesthetics.",
-  "requestFramePermissions": ["microphone"]
+  "requestFramePermissions": []
 }

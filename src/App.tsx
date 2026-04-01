@@ -49,10 +49,10 @@ const GRID_OFFSET = 10;
 const GRID_COUNT = 20; // 20x20 grid
 
 const DIFFICULTY_CONFIG = {
-  EASY: { initialSpeed: 250, speedIncrement: 1, obstacleInterval: 15000, threshold: 0, color: '#10b981', spawnCount: 1 }, // Emerald
-  MEDIUM: { initialSpeed: 180, speedIncrement: 3, obstacleInterval: 20000, threshold: 50, color: '#f59e0b', spawnCount: 2 }, // Amber
-  HARD: { initialSpeed: 120, speedIncrement: 6, obstacleInterval: 12000, threshold: 150, color: '#3b82f6', spawnCount: 3 }, // Blue
-  INSANE: { initialSpeed: 80, speedIncrement: 10, obstacleInterval: 6000, threshold: 300, color: '#f43f5e', spawnCount: 4 }, // Rose
+  EASY: { initialSpeed: 250, speedIncrement: 5, obstacleInterval: 15000, threshold: 0, color: '#10b981', spawnCount: 1 }, // Emerald
+  MEDIUM: { initialSpeed: 180, speedIncrement: 8, obstacleInterval: 20000, threshold: 50, color: '#f59e0b', spawnCount: 2 }, // Amber
+  HARD: { initialSpeed: 120, speedIncrement: 12, obstacleInterval: 12000, threshold: 150, color: '#3b82f6', spawnCount: 3 }, // Blue
+  INSANE: { initialSpeed: 80, speedIncrement: 15, obstacleInterval: 6000, threshold: 300, color: '#f43f5e', spawnCount: 4 }, // Rose
 };
 
 const INITIAL_SNAKE: Point[] = [
@@ -154,19 +154,22 @@ function handleFirestoreError(error: unknown, operationType: OperationType, path
 }
 
 export default function App() {
-  const [gameState, setGameState] = useState<GameState>({
-    snake: INITIAL_SNAKE,
-    food: { x: 5, y: 5 },
-    obstacles: [],
-    direction: 'UP',
-    difficulty: 'EASY',
-    score: 0,
-    isGameOver: false,
-    isPaused: true,
-    isGameStarted: false,
-    highScore: 0,
-    timeSinceLastFood: 0,
-    initialDistance: 10,
+  const [gameState, setGameState] = useState<GameState>(() => {
+    const savedHighScore = localStorage.getItem('neo_pro_snake_highscore');
+    return {
+      snake: INITIAL_SNAKE,
+      food: { x: 5, y: 5 },
+      obstacles: [],
+      direction: 'UP',
+      difficulty: 'EASY',
+      score: 0,
+      isGameOver: false,
+      isPaused: true,
+      isGameStarted: false,
+      highScore: savedHighScore ? parseInt(savedHighScore, 10) : 0,
+      timeSinceLastFood: 0,
+      initialDistance: 10,
+    };
   });
 
   const [user, setUser] = useState<User | null>(null);
@@ -441,6 +444,9 @@ export default function App() {
         }
         
         newHighScore = Math.max(newHighScore, newScore);
+        if (newHighScore > prev.highScore) {
+          localStorage.setItem('neo_pro_snake_highscore', newHighScore.toString());
+        }
         newFood = generatePoint(newSnake, prev.food, prev.obstacles);
         newInitialDistance = Math.abs(head.x - newFood.x) + Math.abs(head.y - newFood.y);
         newTimeSinceLastFood = 0;
@@ -580,10 +586,13 @@ export default function App() {
     ctx.fillStyle = '#0a0a0a';
     ctx.fillRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
 
-    // Draw Grid Border (Subtle)
-    ctx.strokeStyle = '#00ff0022';
-    ctx.lineWidth = 2;
-    ctx.strokeRect(GRID_OFFSET - 2, GRID_OFFSET - 2, (GRID_COUNT * GRID_SIZE) + 4, (GRID_COUNT * GRID_SIZE) + 4);
+    // Draw Grid Border (High Contrast Neon)
+    ctx.strokeStyle = '#00ff00';
+    ctx.lineWidth = 4;
+    ctx.shadowColor = '#00ff00';
+    ctx.shadowBlur = 15;
+    ctx.strokeRect(GRID_OFFSET - 4, GRID_OFFSET - 4, (GRID_COUNT * GRID_SIZE) + 8, (GRID_COUNT * GRID_SIZE) + 8);
+    ctx.shadowBlur = 0;
 
     // Draw Food (Mouse) - Pixelated style
     const fx = (gameState.food.x * GRID_SIZE) + GRID_OFFSET;
@@ -652,7 +661,6 @@ export default function App() {
             {user ? (
               <div className="flex items-center gap-3 sm:gap-4">
                 <div className="text-right hidden sm:block">
-                  <p className="text-[10px] text-green-500/60 uppercase font-arcade leading-none mb-1">PLAYER 1</p>
                   <p className="text-xs font-arcade text-green-500">{user.displayName?.split(' ')[0].toUpperCase()}</p>
                 </div>
                 <button onClick={signOut} className="p-2 hover:bg-red-500/10 group"><LogOut className="w-5 h-5 text-green-500 group-hover:text-red-500" /></button>
@@ -682,9 +690,12 @@ export default function App() {
                   <p className="text-xl sm:text-3xl font-arcade arcade-text-glow" style={{ color: DIFFICULTY_CONFIG[gameState.difficulty].color }}>{gameState.score.toString().padStart(5, '0')}</p>
                 </div>
                 
-                <div className="flex flex-col text-center">
+                <div className="flex flex-col text-center relative">
                   <p className="text-[10px] uppercase font-arcade text-white font-bold">HI-SCORE</p>
                   <p className="text-xl sm:text-3xl font-arcade arcade-text-glow text-white">{gameState.highScore.toString().padStart(5, '0')}</p>
+                  {gameState.score > 0 && gameState.score === gameState.highScore && (
+                    <span className="absolute -bottom-4 left-1/2 -translate-x-1/2 text-[8px] font-arcade text-yellow-400 animate-pulse whitespace-nowrap">NEW RECORD</span>
+                  )}
                 </div>
 
                 <div className="flex flex-col text-right">
@@ -693,7 +704,7 @@ export default function App() {
                 </div>
               </div>
 
-              <canvas ref={canvasRef} width={CANVAS_SIZE} height={CANVAS_SIZE} className="w-full aspect-square max-w-[500px] mx-auto block mt-12 sm:mt-16 border-4 border-white/10" />
+              <canvas ref={canvasRef} width={CANVAS_SIZE} height={CANVAS_SIZE} className="w-full aspect-square max-w-[500px] mx-auto block mt-16 sm:mt-24 border-4 border-green-500/50 shadow-[0_0_30px_rgba(0,255,0,0.2)]" />
 
               <AnimatePresence>
                 {showLevelUp && (
