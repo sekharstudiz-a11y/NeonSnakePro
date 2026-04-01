@@ -1,1 +1,90 @@
 @import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap');
+
+@theme {
+  --font-arcade: "Press Start 2P", system-ui, sans-serif;
+  --font-terminal: "VT323", monospace;
+}
+
+@layer base {
+  html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    width: 100%;
+    overflow-x: hidden;
+    background-color: #050505;
+    color: #00ff00;
+  }
+}
+
+@layer components {
+  .crt-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: linear-gradient(
+      rgba(18, 16, 16, 0) 50%,
+      rgba(0, 0, 0, 0.25) 50%
+    ),
+    linear-gradient(
+      90deg,
+      rgba(255, 0, 0, 0.06),
+      rgba(0, 255, 0, 0.02),
+      rgba(0, 0, 255, 0.06)
+    );
+    background-size: 100% 4px, 3px 100%;
+    pointer-events: none;
+    z-index: 9999;
+    opacity: 0.3;
+  }
+
+  .crt-flicker {
+    animation: flicker 0.15s infinite;
+  }
+
+  @keyframes flicker {
+    0% { opacity: 0.27861; }
+    5% { opacity: 0.34769; }
+    10% { opacity: 0.23604; }
+    15% { opacity: 0.90626; }
+    20% { opacity: 0.18128; }
+    25% { opacity: 0.83891; }
+    30% { opacity: 0.65583; }
+    35% { opacity: 0.57807; }
+    40% { opacity: 0.26559; }
+    45% { opacity: 0.84693; }
+    50% { opacity: 0.96019; }
+    55% { opacity: 0.08523; }
+    60% { opacity: 0.71313; }
+    65% { opacity: 0.09044; }
+    70% { opacity: 0.27035; }
+    75% { opacity: 0.16801; }
+    80% { opacity: 0.10165; }
+    85% { opacity: 0.99086; }
+    90% { opacity: 0.4628; }
+    95% { opacity: 0.43579; }
+    100% { opacity: 0.27861; }
+  }
+
+  .arcade-border {
+    border: 4px solid #00ff00;
+    box-shadow: 0 0 10px #00ff00, inset 0 0 10px #00ff00;
+  }
+
+  .arcade-text-glow {
+    text-shadow: 0 0 5px #00ff00, 0 0 10px #00ff00;
+  }
+
+  .arcade-btn {
+    @apply font-arcade text-[10px] uppercase px-6 py-3 bg-black border-4 border-green-500 text-green-500 hover:bg-green-500 hover:text-black transition-all active:scale-95;
+    box-shadow: 4px 4px 0px #006400;
+  }
+
+  .arcade-btn:active {
+    box-shadow: 0px 0px 0px #006400;
+    transform: translate(4px, 4px);
+  }
+}
